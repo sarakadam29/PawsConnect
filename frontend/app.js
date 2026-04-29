@@ -1,4 +1,4 @@
-﻿const API_BASE = "https://web-production-8d6b1.up.railway.app";
+const API_BASE = "https://paws-connect.up.railway.app";
 const THREAD_KEY = "paw-connect-threads";
 const LOCATION_CACHE_TTL_MS = 5 * 60 * 1000;
 
@@ -141,7 +141,7 @@ function bindDonation() {
 
 async function loadPublicConfig() {
   try {
-    const response = await fetch(`${API_BASE}/public-config`);
+    const response = await fetch(`${API_BASE}/api/public-config`);
     if (!response.ok) return;
     const data = await response.json();
     state.publicConfig.upiVpa = data?.upi_vpa || null;
