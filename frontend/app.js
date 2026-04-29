@@ -522,7 +522,7 @@ function renderReport(data) {
   const preview = document.getElementById("reportPreviewImage");
   const confidenceNote = document.getElementById("reportConfidenceNote");
   if (data.image_url) {
-    preview.src = data.image_url;
+    preview.src = buildReportImageUrl(data.image_url);
     preview.classList.remove("hidden");
   } else {
     preview.classList.add("hidden");
@@ -1398,7 +1398,7 @@ function renderReportCard(report) {
         <input class="report-select-checkbox" type="checkbox" data-report-select="${esc(reportId)}" ${isReportSelected(reportId) ? "checked" : ""}>
         <span>Select</span>
       </label>
-      ${report.image_url ? `<img class="report-preview-image report-card-image" src="${esc(report.image_url)}" alt="${esc(displayName)}">` : ""}
+      ${report.image_url ? `<img class="report-preview-image report-card-image" src="${esc(buildReportImageUrl(report.image_url))}" alt="${esc(displayName)}">` : ""}
       <div class="report-card-body">
         <input
           class="report-name-input report-name-input-card"
@@ -1616,7 +1616,7 @@ function expandReportEntries(reports) {
       ...payload,
       parent_report_id: report.report_id,
       image_path: report.image_path,
-      image_url: report.image_path ? `/${buildReportImageUrl(report.image_path)}` : "",
+      image_url: report.image_path ? buildReportImageUrl(report.image_path) : "",
       source_report: report
     };
   });
@@ -1624,7 +1624,7 @@ function expandReportEntries(reports) {
 
 function buildStoredReportPayload(report) {
   const normalizedStatus = normalizeHealthStatus(report.health_status);
-  const imageUrl = report.image_path ? `/${buildReportImageUrl(report.image_path)}` : "";
+  const imageUrl = report.image_path ? buildReportImageUrl(report.image_path) : "";
   const animalReports = Array.isArray(report.animal_reports) ? report.animal_reports : [];
   const primaryAnimalReport = animalReports[0] || {};
   const primaryDetectedConditions = Array.isArray(report.detected_conditions) ? report.detected_conditions : (Array.isArray(primaryAnimalReport.detected_conditions) ? primaryAnimalReport.detected_conditions : []);
@@ -2104,7 +2104,7 @@ function openReportModal(report) {
 
   document.getElementById("modalContent").innerHTML = `
     <div class="modal-report">
-      ${report.image_path ? `<img class="report-preview-image" src="/${esc(buildReportImageUrl(report.image_path))}" alt="${esc(report.animal_type || "animal")}">` : ""}
+      ${report.image_path ? `<img class="report-preview-image" src="${esc(buildReportImageUrl(report.image_path))}" alt="${esc(report.animal_type || "animal")}">` : ""}
       ${report.image_path ? `<div class="image-confidence-note">${esc(formatAiConfidence(report))}</div>` : ""}
       <div class="report-header">
         <div class="report-header-left">
@@ -2258,7 +2258,7 @@ function renderStoredReportModal() {
 
   document.getElementById('modalContent').innerHTML = `
     <div class="modal-report full-report-modal">
-      ${data.image_url ? `<img class="report-preview-image" src="${esc(data.image_url)}" alt="${esc(activeReport.animal_type || data.animal_type || 'animal')}">` : ''}
+      ${data.image_url ? `<img class="report-preview-image" src="${esc(buildReportImageUrl(data.image_url))}" alt="${esc(activeReport.animal_type || data.animal_type || 'animal')}">` : ''}
       ${data.image_url ? `<div class="image-confidence-note">${esc(formatAiConfidence(activeReport, data))}</div>` : ''}
       <div class="report-header">
         <div class="report-header-left">
@@ -2754,7 +2754,7 @@ async function buildReportPdfBlob(payload) {
   const imageBoxHeight = 180;
   const imageBoxWidth = pageWidth - margin * 2;
   const lines = wrapPdfLines(buildReportPdfLines(payload));
-  const previewUrl = payload.image_url || (payload.image_path ? `/${buildReportImageUrl(payload.image_path)}` : "");
+  const previewUrl = buildReportImageUrl(payload.image_url || payload.image_path);
   const imageData = previewUrl ? await loadImageAsJpegData(previewUrl) : null;
 
   const textTop = margin + titleHeight + (imageData ? imageBoxHeight + 18 : 0);
@@ -2927,7 +2927,7 @@ function buildPrintableReportHtml(payload) {
   const avoidSteps = Array.isArray(emergencyPlan.avoid_steps) ? emergencyPlan.avoid_steps : [];
   const locationText = [payload.location_address, payload.location_name].filter(Boolean).join(" - ") || "Location unavailable";
   const reportDate = formatDateTime(payload.created_at || new Date());
-  const previewUrl = payload.image_url || (payload.image_path ? `/${buildReportImageUrl(payload.image_path)}` : "");
+  const previewUrl = buildReportImageUrl(payload.image_url || payload.image_path);
   const confidence = formatAiConfidence(activeReport, payload);
   const html = `
     <!doctype html>
