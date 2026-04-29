@@ -1,4 +1,4 @@
-﻿const API = window.location.origin || "";
+﻿const API_BASE = "https://web-production-8d6b1.up.railway.app";
 const THREAD_KEY = "paw-connect-threads";
 const LOCATION_CACHE_TTL_MS = 5 * 60 * 1000;
 
@@ -141,7 +141,7 @@ function bindDonation() {
 
 async function loadPublicConfig() {
   try {
-    const response = await fetch(`${API}/public-config`);
+    const response = await fetch(`${API_BASE}/public-config`);
     if (!response.ok) return;
     const data = await response.json();
     state.publicConfig.upiVpa = data?.upi_vpa || null;
@@ -466,7 +466,7 @@ async function analyseImage() {
     form.append("prefer_current_location", "true");
     form.append("contact_rescue", document.getElementById("rescueCheckbox").checked ? "true" : "false");
 
-    const res = await fetch(`${API}/api/predict`, { method: "POST", body: form });
+    const res = await fetch(`${API_BASE}/api/predict`, { method: "POST", body: form });
     if (!res.ok) throw new Error(`Server error ${res.status}`);
     const data = await res.json();
     if (scanAnimalName && !data.animal_name) {
@@ -1008,7 +1008,7 @@ async function callCareBotAPI(messages) {
     location_name: state.lastReport?.location_name || state.location.name || null
   };
 
-  const res = await fetch(`${API}/api/medical-chat`, {
+  const res = await fetch(`${API_BASE}/api/medical-chat`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify(payload)
@@ -1189,7 +1189,7 @@ function bindDashboard() {
 async function loadReports() {
   const requestSeq = ++state.reportLoadSeq;
   try {
-    const res = await fetch(`${API}/api/reports`);
+    const res = await fetch(`${API_BASE}/api/reports`);
     const reports = await res.json();
     if (requestSeq !== state.reportLoadSeq) return;
     state.reports = Array.isArray(reports) ? reports : [];
@@ -1206,7 +1206,7 @@ async function loadDbHealth() {
   const pill = document.getElementById("dbStatusPill");
   if (!pill) return;
   try {
-    const res = await fetch(`${API}/api/db-health`);
+    const res = await fetch(`${API_BASE}/api/db-health`);
     if (!res.ok) throw new Error(`Status ${res.status}`);
     const data = await res.json();
     pill.className = "db-status-pill connected";
@@ -1284,7 +1284,7 @@ async function deleteSelectedReports() {
   selectedIds.forEach((reportId) => state.selectedReportIds.delete(Number(reportId)));
   renderStats(expandReportEntries(state.reports));
   renderReportCards(getFilteredReports());
-  const results = await Promise.allSettled(selectedIds.map((id) => fetch(`${API}/api/reports/${Number(id)}`, { method: "DELETE" })));
+  const results = await Promise.allSettled(selectedIds.map((id) => fetch(`${API_BASE}/api/reports/${Number(id)}`, { method: "DELETE" })));
   const failed = results.some((result) => result.status === "rejected" || !result.value?.ok);
   if (failed) {
     await loadReports();
@@ -1539,7 +1539,7 @@ async function updateReportAnimalName(reportId, nextName) {
   renderStats(expandReportEntries(state.reports));
   renderReportCards(getFilteredReports());
   try {
-    const res = await fetch(`${API}/api/reports/${reportId}`, {
+    const res = await fetch(`${API_BASE}/api/reports/${reportId}`, {
       method: "PUT",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ animal_name: trimmed || null }),
@@ -1575,7 +1575,7 @@ async function deleteReport(id) {
   renderStats(expandReportEntries(state.reports));
   renderReportCards(getFilteredReports());
   try {
-    const res = await fetch(`${API}/api/reports/${reportId}`, { method: "DELETE" });
+    const res = await fetch(`${API_BASE}/api/reports/${reportId}`, { method: "DELETE" });
     if (!res.ok) {
       await loadReports();
     }
@@ -1592,7 +1592,7 @@ async function deleteAllReports() {
   renderStats([]);
   renderReportCards([]);
   try {
-    const res = await fetch(`${API}/api/reports`, { method: "DELETE" });
+    const res = await fetch(`${API_BASE}/api/reports`, { method: "DELETE" });
     if (!res.ok) {
       await loadReports();
     }
@@ -1744,7 +1744,7 @@ async function fetchRescueSuggestions(query) {
   const controller = new AbortController();
   state.rescueSuggestionAbort = controller;
   try {
-    const res = await fetch(`${API}/api/locations/autocomplete?q=${encodeURIComponent(query)}`, { signal: controller.signal, cache: "no-store" });
+    const res = await fetch(`${API_BASE}/api/locations/autocomplete?q=${encodeURIComponent(query)}`, { signal: controller.signal, cache: "no-store" });
     if (!res.ok) throw new Error(`Status ${res.status}`);
     const data = await res.json();
     const items = Array.isArray(data?.suggestions) ? data.suggestions : [];
@@ -1825,7 +1825,7 @@ async function resolveRescueLocationQuery(rawValue) {
   }
 
   try {
-    const res = await fetch(`${API}/api/locations/autocomplete?q=${encodeURIComponent(location)}`, { cache: "no-store" });
+    const res = await fetch(`${API_BASE}/api/locations/autocomplete?q=${encodeURIComponent(location)}`, { cache: "no-store" });
     if (res.ok) {
       const data = await res.json();
       const items = Array.isArray(data?.suggestions) ? data.suggestions : [];
@@ -1879,7 +1879,7 @@ async function loadRescueContacts(options = null) {
         params.set("lat", String(query.lat));
         params.set("lng", String(query.lng));
       }
-      const res = await fetch(`${API}/api/contacts/nearby?${params.toString()}`, { cache: "no-store" });
+      const res = await fetch(`${API_BASE}/api/contacts/nearby?${params.toString()}`, { cache: "no-store" });
       if (!res.ok) throw new Error(`Status ${res.status}`);
       const data = await res.json();
       renderRescueStatus(data.location_status, data.location_message);
