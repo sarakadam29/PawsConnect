@@ -27,9 +27,6 @@ init_db()
 
 app.include_router(router, prefix="/api")
 app.mount("/uploads", StaticFiles(directory=str(settings.upload_path)), name="uploads")
-app.mount("/static", StaticFiles(directory=str(settings.project_root / "frontend")), name="static")
+app.mount("/", StaticFiles(directory=str(settings.project_root / "frontend"), html=True), name="frontend")
 
 
-@app.get("/", include_in_schema=False)
-def serve_frontend():
-    return FileResponse(settings.project_root / "frontend" / "index.html")
